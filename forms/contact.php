@@ -13,10 +13,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// SMTP Configuration for Gmail (uncomment and configure if needed)
-// ini_set('SMTP', 'smtp.gmail.com');
-// ini_set('smtp_port', 587);
-// ini_set('sendmail_from', 'your-gmail@gmail.com');
+// Include SMTP functions and config
+require_once 'smtp_mail.php';
+require_once 'email_config.php';
 
 // Constants
 define('RECEIVING_EMAIL', 'mochibrian10@gmail.com');
@@ -120,10 +119,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             "X-Mailer: PHP/" . phpversion()
         ];
         
-        // Send email (suppress warning if SMTP not configured)
-        $email_sent = @mail(RECEIVING_EMAIL, $email_subject, $email_content, implode("\r\n", $headers));
+        // Try to send email via SMTP first
+        $smtp_config = SMTP_CONFIG;
+        if (!empty($smtp_config['password'])) {
+            // Use SMTP if password is configured
+            $email_sent = send_smtp_email(
+                RECEIVING_EMAIL,
+                $email_subject,
+                $email_content,
+                $formData['name'],
+                $formData['email'],
+                $smtp_config
+            );
+        } else {
+            // Fall back to PHP mail() function
+            $email_sent = @mail(RECEIVING_EMAIL, $email_subject, $email_content, implode("\r\n", $headers));
+        }
 
-        // If mail fails, try to save to file as fallback (for local development)
+        // If email sending fails, log to file
         if (!$email_sent) {
             $log_file = dirname(__FILE__) . '/email_log.txt';
             $log_entry = "\n\n" . str_repeat("=", 80) . "\n";
@@ -136,9 +149,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             file_put_contents($log_file, $log_entry, FILE_APPEND);
 
-            // For local development, show success since message was logged
-            $response_status = 'success';
-            $response_message = 'Thank you for your message! (Email logged for review - check forms/email_log.txt)';
+            if (!empty($smtp_config['password'])) {
+                // SMTP configured but failed
+                $response_status = 'error';
+                $response_message = 'Failed to send email. Please check SMTP configuration.';
+            } else {
+                // No SMTP configured, logged for review
+                $response_status = 'success';
+                $response_message = 'Thank you for your message! (Email logged for review - check forms/email_log.txt)';
+            }
         } else {
             $response_status = 'success';
             $response_message = 'Thank you for your message. We will get back to you soon!';

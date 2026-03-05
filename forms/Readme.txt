@@ -1,44 +1,44 @@
 CONTACT FORM CONFIGURATION
 ==========================
 
-Your contact form is now working! Here's how it handles submissions:
+Your contact form now sends emails directly to Gmail! Here's how it works:
 
-1. **Production Server**: Emails are sent directly to mochibrian10@gmail.com
-2. **Local Development (XAMPP)**: Emails are logged to email_log.txt file
+1. **SMTP Configured**: Emails sent directly to mochibrian10@gmail.com via Gmail SMTP
+2. **No SMTP Config**: Emails logged to email_log.txt file
+3. **Fallback**: If SMTP fails, messages are still logged
 
-TO ENABLE REAL EMAIL SENDING IN XAMPP:
-=====================================
+TO ENABLE GMAIL SMTP EMAIL SENDING:
+===================================
 
-1. Open XAMPP Control Panel
-2. Click "Config" next to Apache
-3. Select "PHP (php.ini)"
-4. Find the [mail function] section and update:
+1. **Generate Gmail App Password**:
+   - Go to: https://myaccount.google.com/apppasswords
+   - Sign in with mochibrian10@gmail.com
+   - Select "Mail" as the app
+   - Select your device (or create custom name)
+   - Copy the 16-character password
 
-   SMTP = smtp.gmail.com
-   smtp_port = 587
-   sendmail_from = your-gmail@gmail.com
-   sendmail_path = "\"C:\xampp\sendmail\sendmail.exe\" -t"
+2. **Configure Email Settings**:
+   - Open `forms/email_config.php`
+   - Find: `'password' => '',`
+   - Replace with: `'password' => 'your-16-char-app-password',`
+   - Save the file
 
-5. Save and restart Apache
+3. **Test Your Setup**:
+   - Visit: http://localhost/BrianKingetichPortfolio/forms/test_email.php
+   - Should show "✓ Email sent successfully via SMTP"
 
-6. Configure C:\xampp\sendmail\sendmail.ini:
-   [sendmail]
-   smtp_server=smtp.gmail.com
-   smtp_port=587
-   smtp_ssl=tls
-   auth_username=your-gmail@gmail.com
-   auth_password=your-app-password
+SECURITY NOTES:
+==============
+- App Passwords are specific to your Google account
+- They provide access only to Gmail sending
+- You can revoke them anytime from Google Account settings
+- Never share your App Password
 
-   Note: Use Gmail App Password, not your regular password!
-   Generate one at: https://myaccount.google.com/apppasswords
-
-TEST YOUR SETUP:
-===============
-Visit: http://localhost/BrianKingetichPortfolio/forms/test_email.php
-
-This will test your email configuration and show recent logs.
-
-ALTERNATIVE: Use a service like SendGrid, Mailgun, or Formspree for reliable email delivery on any hosting.
+TROUBLESHOOTING:
+================
+- If SMTP fails: Check your App Password is correct
+- If still failing: Verify 2-factor authentication is enabled on Gmail
+- Test page will show detailed status
 
 Fully working PHP/AJAX contact form script is available in the pro version of the template.
 You can buy it from: https://bootstrapmade.com/snapfolio-bootstrap-portfolio-template/
