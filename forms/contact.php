@@ -115,8 +115,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             "X-Mailer: PHP/" . phpversion()
         ];
         
-        // Send email
-        $email_sent = mail(RECEIVING_EMAIL, $email_subject, $email_content, implode("\r\n", $headers));
+        // Send email (suppress warning if SMTP not configured)
+        $email_sent = @mail(RECEIVING_EMAIL, $email_subject, $email_content, implode("\r\n", $headers));
         
         // If mail fails, try to save to file as fallback (for local development)
         if (!$email_sent) {
