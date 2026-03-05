@@ -13,6 +13,11 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// SMTP Configuration for Gmail (uncomment and configure if needed)
+// ini_set('SMTP', 'smtp.gmail.com');
+// ini_set('smtp_port', 587);
+// ini_set('sendmail_from', 'your-gmail@gmail.com');
+
 // Constants
 define('RECEIVING_EMAIL', 'mochibrian10@gmail.com');
 define('SITE_URL', '/'); // Change this to your site URL
@@ -117,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // Send email (suppress warning if SMTP not configured)
         $email_sent = @mail(RECEIVING_EMAIL, $email_subject, $email_content, implode("\r\n", $headers));
-        
+
         // If mail fails, try to save to file as fallback (for local development)
         if (!$email_sent) {
             $log_file = dirname(__FILE__) . '/email_log.txt';
@@ -128,16 +133,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $log_entry .= "Subject: {$email_subject}\n";
             $log_entry .= str_repeat("-", 80) . "\n";
             $log_entry .= $email_content;
-            
+
             file_put_contents($log_file, $log_entry, FILE_APPEND);
-            $email_sent = true; // Mark as sent so user gets success message
-        }
-        
-        if ($email_sent) {
+
+            // For local development, show success since message was logged
+            $response_status = 'success';
+            $response_message = 'Thank you for your message! (Email logged for review - check forms/email_log.txt)';
+        } else {
             $response_status = 'success';
             $response_message = 'Thank you for your message. We will get back to you soon!';
-        } else {
-            $response_message = 'Failed to send email. Please check your server configuration.';
         }
         
     } else {
